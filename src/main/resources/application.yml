@@ -1,0 +1,22 @@
+spring.profiles.active: local
+
+server:
+  port: 9090
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/movies
+    username: root
+    password: 12345
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties.hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+        format: true
+
+application.jwt:
+  secretKey: luisrard12345luisrard12345luisrard12345luisrard123459luisrard12345x
+  tokenPrefix: Bearer
+  tokenExpirationAfterDays: 10
