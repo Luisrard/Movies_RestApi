@@ -9,11 +9,11 @@ import javax.persistence.*;
 @Entity
 public class Movie {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(nullable = false, length = 60)
+    @Column(nullable = false, length = 60, unique = true)
     private String name;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 400)
     private String resume;
     private Float score;
     @Column(nullable = false)
@@ -24,4 +24,7 @@ public class Movie {
     private Integer duration;
     @Enumerated(EnumType.STRING)
     private MovieRating rating;
+    @ManyToOne
+    @JoinColumn(name = "director",nullable = false)
+    private Person director;
 }
