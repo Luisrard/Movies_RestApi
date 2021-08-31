@@ -1,4 +1,4 @@
-package com.luisrard.movies_api.repositories;
+package com.luisrard.movies_api.repositories.jpa;
 
 import com.luisrard.movies_api.entities.Person;
 import org.springframework.data.jpa.repository.JpaRepository;

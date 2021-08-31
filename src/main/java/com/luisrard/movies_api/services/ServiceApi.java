@@ -1,10 +1,11 @@
 package com.luisrard.movies_api.services;
 
-import com.luisrard.movies_api.model.search_criteria.PageProp;
+import com.luisrard.movies_api.models.search_criteria.PageProp;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -60,21 +61,21 @@ public interface ServiceApi<D,C> {
      * Function to <b>get</b> the all the objects in a list in the database
      * @return The list of the objects
      */
-    default List<D> getObjects(){return  null;}
+    default List<D> getObjects(){return Collections.emptyList();}
 
     /**
      * Function to <b>get</b> the all the objects in a list in the database, whit a filter
      * @param criteria the filters of the search.
      * @return The list of the objects
      */
-    default List<D> getObjects(C criteria){return null;}
+    default List<D> getObjects(C criteria){return Collections.emptyList();}
 
     /**
      * Function to find one object or the first object found with a criteria filter
      * @param criteria the criteria
      * @return the object found
      */
-    default D findOne(C criteria){return null;};
+    default D findOne(C criteria){return null;}
     /**
      * Function to <b>find</b> the object by their id in the database
      * @param id Id of the object to search

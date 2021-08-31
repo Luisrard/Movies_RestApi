@@ -1,4 +1,4 @@
-package com.luisrard.movies_api.model.search_criteria;
+package com.luisrard.movies_api.models.search_criteria;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

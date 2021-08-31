@@ -1,11 +1,14 @@
 package com.luisrard.movies_api.entities;
 
 import com.luisrard.movies_api.entities.enums.MovieRating;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Entity
 public class Movie {
     @Id

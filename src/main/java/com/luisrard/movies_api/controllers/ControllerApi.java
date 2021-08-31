@@ -1,7 +1,7 @@
 package com.luisrard.movies_api.controllers;
 
 import com.luisrard.movies_api.exception.ApiRequestException;
-import com.luisrard.movies_api.model.search_criteria.PageProp;
+import com.luisrard.movies_api.models.search_criteria.PageProp;
 import com.luisrard.movies_api.services.ServiceApi;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * Abstract class to manage the request of the clients in a generic form and works as template for a <b>Controller Class</b>,<br>
- * As the <b>GET</b> to get a page, a page with filters and find one object. {@link #getPage(Pageable)}, {@link #getPage(PageProp, Object)}, {@link #findObject(int)}.<br>
+ * As the <b>GET</b> to get a page, a page with filters and find one object. {@link #getPage(Pageable)}, {@link #getPage(PageProp, Object)}, {@link #findObject(Integer)}.<br>
  * <b>POST</b> to save one object. {@link #saveObject(Object)}.<br>
  * <b>PUT</b> to update one object. {@link #updateObject(Object)}.<br>
  * <b>DELETE</b> to delete one object. {@link #deleteObject(int)}.<br>
@@ -48,10 +48,14 @@ import java.util.List;
  * @author Luis
  */
 public abstract class ControllerApi<D,C, S extends ServiceApi<D,C>> {
-    protected final Logger logger;
+    protected static final String EXC_MSG_INVALID_PARAMS = "Invalid parameters";
+    protected static final String EXC_MSG_NOT_SAVED_END = " has not been saved";
+    protected static final String EXC_MSG_INVALID_FIELD = "Invalid fields";
+    protected static final String EXC_MSG_NOT_DELETED = " has not been deleted";
     protected final S service;
+    protected final Logger logger;
 
-    public ControllerApi(Class<?> controllerClass, S service) {
+    protected ControllerApi(Class<?> controllerClass, S service) {
         this.logger = LoggerFactory.getLogger(controllerClass);
         this.service = service;
     }
@@ -117,7 +121,7 @@ public abstract class ControllerApi<D,C, S extends ServiceApi<D,C>> {
         D response = this.service.findOne(criteria);
         if(response == null)
         {
-            logger.info(getEntityName() + " " + criteria + " not found...");
+            logger.info(getEntityName(), " ", criteria, " not found...");
             throw new ApiRequestException("No " + getEntityName() + " " + criteria + " exist", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(response);
@@ -129,13 +133,20 @@ public abstract class ControllerApi<D,C, S extends ServiceApi<D,C>> {
      * @param id The id of the object
      * @return The object obtained
      */
-    public ResponseEntity<D> findObject(int id)
+    public ResponseEntity<D> findObject(Integer id)
     {
-        D response = this.service.find(id);
+        D response;
+        try {
+            response = this.service.find(id);
+        }catch (NullPointerException ex){
+            throw new ApiRequestException(EXC_MSG_INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+        }
+
+
         if(response == null)
         {
-            logger.info(getEntityName() + " " + id + " not found...");
-            throw new ApiRequestException("No " + getEntityName() + " " + id + " exist", HttpStatus.NOT_FOUND);
+            logger.info(getEntityName() , " " , id , " not found...");
+            throw new ApiRequestException( getEntityName() + " " + id + " does not exist", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(response);
     }
@@ -152,32 +163,32 @@ public abstract class ControllerApi<D,C, S extends ServiceApi<D,C>> {
             D response = this.service.save(requestObject);
             if(response == null)
             {
-                logger.warn(getEntityName() + " " + requestObject + " has not been saved");
-                throw new ApiRequestException("Invalid fields", HttpStatus.BAD_REQUEST);
+                logger.warn(getEntityName(), " ", requestObject, EXC_MSG_NOT_SAVED_END);
+                throw new ApiRequestException(EXC_MSG_INVALID_PARAMS, HttpStatus.BAD_REQUEST);
             }
             return ResponseEntity.ok(response);
         }catch (ApiRequestException e){
             e.printStackTrace();
-            logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + requestObject + " has not been saved");
+            logger.warn(getEntityName(), " ", requestObject, EXC_MSG_NOT_SAVED_END);
             throw e;
         }catch (DataIntegrityViolationException e){
             logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + requestObject + " has not been saved");
+            logger.warn(getEntityName(), " ", requestObject, EXC_MSG_NOT_SAVED_END);
             if(e.getCause() instanceof ConstraintViolationException){
                 ConstraintViolationException cause = (ConstraintViolationException) e.getCause();
                 if(cause.getErrorCode() == 1062){
                     throw new ApiRequestException("Duplicate value: This " + getEntityName() + " already exist", HttpStatus.BAD_REQUEST);
                 }
             }
-            throw new ApiRequestException("Invalid fields", HttpStatus.BAD_REQUEST);
-        }
-        catch (RuntimeException e)
+            throw new ApiRequestException(EXC_MSG_INVALID_FIELD, HttpStatus.BAD_REQUEST);
+        }catch (NullPointerException ex){
+            throw new ApiRequestException(EXC_MSG_INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e)
         {
             e.printStackTrace();
             logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + requestObject + " has not been saved");
-            throw new ApiRequestException("Invalid fields", HttpStatus.BAD_REQUEST);
+            logger.warn(getEntityName() , " " , requestObject , EXC_MSG_NOT_SAVED_END);
+            throw new ApiRequestException(EXC_MSG_INVALID_FIELD, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -192,22 +203,22 @@ public abstract class ControllerApi<D,C, S extends ServiceApi<D,C>> {
         try{
             D response = this.service.update(requestObject);
             if(response == null) {
-                logger.warn(getEntityName() + " " + requestObject + "has not been updated");
-                throw new ApiRequestException("Invalid fields", HttpStatus.BAD_REQUEST);
+                logger.warn(getEntityName() , " " , requestObject , "has not been updated");
+                throw new ApiRequestException(EXC_MSG_INVALID_FIELD, HttpStatus.BAD_REQUEST);
             }
             return ResponseEntity.ok(response);
         }catch (ApiRequestException e){
             e.printStackTrace();
-            logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + requestObject + " has not been updated");
+            logger.warn(getEntityName() , " " , requestObject , " has not been updated");
             throw e;
+        } catch (NullPointerException ex){
+            throw new ApiRequestException(EXC_MSG_INVALID_PARAMS, HttpStatus.BAD_REQUEST);
         }
-        catch (RuntimeException e)
-        {
+        catch (RuntimeException e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + requestObject + " has not been updated");
-            throw new ApiRequestException("Invalid fields", HttpStatus.BAD_REQUEST);
+            logger.warn(getEntityName() , " " , requestObject , " has not been updated");
+            throw new ApiRequestException(EXC_MSG_INVALID_FIELD, HttpStatus.BAD_REQUEST);
 
         }
     }
@@ -218,35 +229,32 @@ public abstract class ControllerApi<D,C, S extends ServiceApi<D,C>> {
      * @param id The id of the obeject to delete
      * @return The result of the request EITHER was deleted or not
      */
-    public ResponseEntity<?> deleteObject(int id)
+    public ResponseEntity<Object> deleteObject(int id)
     {
         try {
             this.service.delete(id);
-        }
-        catch (ApiRequestException e){
-            logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + id + " has not been deleted");
+        } catch (ApiRequestException e){
+            logger.warn(getEntityName(), " ", id, EXC_MSG_NOT_DELETED);
             throw e;
-        }
-        catch (EmptyResultDataAccessException e){
+        } catch (NullPointerException ex){
+            throw new ApiRequestException(EXC_MSG_INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+        } catch (EmptyResultDataAccessException e){
             logger.warn(e.getMessage());
             String msg = "The " + getEntityName() + "with id " + id + "does not exist";
             logger.warn(msg);
-            logger.warn(getEntityName() + " " + id + " has not been deleted");
+            logger.warn(getEntityName(), " ", id, EXC_MSG_NOT_DELETED);
             throw new ApiRequestException(msg, HttpStatus.NOT_FOUND);
-        }
-        catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e){
             logger.warn(e.getMessage());
             String msg = "The " + getEntityName() + "cannot be delete for existent linked dependencies";
             logger.warn(msg);
-            logger.warn(getEntityName() + " " + id + " has not been deleted");
+            logger.warn(getEntityName(), " ", id, EXC_MSG_NOT_DELETED);
             throw new ApiRequestException(msg, HttpStatus.PRECONDITION_FAILED);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-            logger.warn(getEntityName() + " " + id + " has not been deleted");
-            throw new ApiRequestException("No " + getEntityName() + " " + id + " exist", HttpStatus.NOT_FOUND);
+            logger.warn(getEntityName(), " ", id, EXC_MSG_NOT_DELETED);
+            throw new ApiRequestException("No "+ getEntityName() + " " + id + " exist", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok().build();
     }

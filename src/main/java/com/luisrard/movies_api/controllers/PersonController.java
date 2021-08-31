@@ -1,34 +1,32 @@
 package com.luisrard.movies_api.controllers;
 
-import com.luisrard.movies_api.entities.Movie;
-import com.luisrard.movies_api.services.MoviesService;
+import com.luisrard.movies_api.entities.Person;
+import com.luisrard.movies_api.services.PersonService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/movies")
-public class MoviesController extends ControllerApi<Movie, Object, MoviesService> {
-
-    public MoviesController(MoviesService service) {
-        super(MoviesController.class, service);
-
+@RequestMapping("/people")
+public class PersonController extends ControllerApi<Person, Object, PersonService>{
+    public PersonController(PersonService service) {
+        super(PersonController.class, service);
     }
 
     @GetMapping("/find")
     @Override
-    public ResponseEntity<Movie> findObject(Integer id) {
+    public ResponseEntity<Person> findObject(Integer id) {
         return super.findObject(id);
     }
 
     @PostMapping
     @Override
-    public ResponseEntity<Movie> saveObject(Movie requestObject) {
+    public ResponseEntity<Person> saveObject(Person requestObject) {
         return super.saveObject(requestObject);
     }
 
     @PutMapping
     @Override
-    public ResponseEntity<Movie> updateObject(Movie requestObject) {
+    public ResponseEntity<Person> updateObject(Person requestObject) {
         return super.updateObject(requestObject);
     }
 
@@ -40,11 +38,11 @@ public class MoviesController extends ControllerApi<Movie, Object, MoviesService
 
     @Override
     protected String getEntityName() {
-        return "Movie";
+        return "Person";
     }
 
     @Override
     protected String getEntityPluralName() {
-        return "Movies";
+        return "People";
     }
 }
